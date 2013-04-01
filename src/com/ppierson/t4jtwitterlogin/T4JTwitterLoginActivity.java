@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 public class T4JTwitterLoginActivity extends Activity {
 	
@@ -174,16 +175,27 @@ public class T4JTwitterLoginActivity extends Activity {
 			public void run() {
 				try {
 					requestToken = twitter.getOAuthRequestToken(Constants.TWITTER_CALLBACK_URL);
+				} catch (Exception e) {
+					final String errorString = e.toString();
 					T4JTwitterLoginActivity.this.runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							Log.d(Constants.TAG,"LOADING AUTH URL");
-							twitterLoginWebView.loadUrl(requestToken.getAuthenticationURL());
+							mProgressDialog.cancel();
+							Toast.makeText(T4JTwitterLoginActivity.this, errorString.toString(), Toast.LENGTH_SHORT).show();
+							finish();
 						}
 					});
-				} catch (TwitterException e) {
 					e.printStackTrace();
+					return;
 				}
+				
+				T4JTwitterLoginActivity.this.runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						Log.d(Constants.TAG,"LOADING AUTH URL");
+						twitterLoginWebView.loadUrl(requestToken.getAuthenticationURL());
+					}
+				});
 			}
 		}).start();
 	}
